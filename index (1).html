@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patrick Yang — Quantitative Research</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #faf8f5;
+      --surface: #f2ede6;
+      --ink: #1a1714;
+      --ink-soft: #4a4540;
+      --ink-muted: #8a8078;
+      --accent: #c45c2e;
+      --accent-soft: #e8d5c8;
+      --bid: #2a7f5e;
+      --ask: #c45c2e;
+      --line: #ddd8d0;
+      --mono: 'JetBrains Mono', monospace;
+      --serif: 'Lora', serif;
+      --sans: 'DM Sans', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-weight: 300; line-height: 1.7; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.2rem 3rem;
+      background: rgba(250,248,245,0.93); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav-name { font-family: var(--serif); font-size: 1rem; font-weight: 500; color: var(--ink); text-decoration: none; }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a { font-size: 0.78rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); text-decoration: none; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--accent); }
+
+    /* HERO */
+    .hero { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; padding-top: 4rem; }
+    .hero-left { display: flex; flex-direction: column; justify-content: center; padding: 6rem 4rem 6rem 5rem; border-right: 1px solid var(--line); }
+    .hero-tag { font-family: var(--mono); font-size: 0.7rem; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 2rem; }
+    .hero-name { font-family: var(--serif); font-size: clamp(2.8rem, 5vw, 4.2rem); font-weight: 500; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 1.8rem; }
+    .hero-name em { font-style: italic; color: var(--accent); }
+    .hero-bio { font-size: 1.02rem; color: var(--ink-soft); max-width: 44ch; line-height: 1.85; margin-bottom: 3rem; }
+    .hero-stats { display: flex; gap: 3rem; }
+    .stat-num { font-family: var(--serif); font-size: 2rem; font-weight: 500; display: block; }
+    .stat-label { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
+    .hero-right { display: flex; flex-direction: column; justify-content: center; padding: 6rem 5rem 6rem 4rem; background: var(--surface); }
+    .hero-right h3 { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 2rem; }
+    .interest-list { list-style: none; display: flex; flex-direction: column; gap: 1.1rem; }
+    .interest-list li { display: flex; align-items: flex-start; gap: 1rem; font-size: 0.93rem; color: var(--ink-soft); line-height: 1.5; }
+    .interest-list li::before { content: '—'; color: var(--accent); font-family: var(--serif); flex-shrink: 0; }
+    .hero-quote { margin-top: 3.5rem; padding: 1.8rem; border: 1px solid var(--line); background: var(--bg); }
+    .hero-quote p { font-family: var(--serif); font-style: italic; font-size: 0.93rem; color: var(--ink-soft); line-height: 1.7; }
+    .hero-quote cite { display: block; margin-top: 0.8rem; font-family: var(--mono); font-size: 0.68rem; font-style: normal; color: var(--ink-muted); letter-spacing: 0.06em; }
+
+    /* SECTIONS */
+    section { padding: 7rem 5rem; }
+    .section-header { display: flex; align-items: baseline; gap: 1.5rem; margin-bottom: 5rem; }
+    .section-tag { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted); white-space: nowrap; }
+    .section-title { font-family: var(--serif); font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 500; letter-spacing: -0.02em; }
+    .section-line { flex: 1; height: 1px; background: var(--line); margin-bottom: 0.3rem; }
+
+    /* TIMELINE */
+    #research { border-top: 1px solid var(--line); }
+    .timeline { position: relative; padding-left: 3rem; }
+    .timeline::before { content: ''; position: absolute; left: 0.5rem; top: 0; bottom: 0; width: 1px; background: var(--line); }
+    .timeline-item { position: relative; }
+    .timeline-dot { position: absolute; left: -2.6rem; top: 1.9rem; width: 10px; height: 10px; border-radius: 50%; background: var(--bg); border: 2px solid var(--line); transition: border-color 0.3s, background 0.3s; cursor: pointer; z-index: 1; }
+    .timeline-item.open .timeline-dot { border-color: var(--accent); background: var(--accent); }
+    .timeline-card { border: 1px solid var(--line); background: var(--bg); margin-bottom: 2.5rem; cursor: pointer; transition: border-color 0.25s, box-shadow 0.25s; overflow: hidden; }
+    .timeline-card:hover { border-color: var(--accent-soft); box-shadow: 0 4px 24px rgba(196,92,46,0.07); }
+    .timeline-item.open .timeline-card { border-color: var(--accent-soft); }
+    .card-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 2rem 2.2rem; gap: 1rem; }
+    .card-version { font-family: var(--mono); font-size: 0.67rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 0.5rem; }
+    .card-title { font-family: var(--serif); font-size: 1.35rem; font-weight: 500; letter-spacing: -0.01em; line-height: 1.3; margin-bottom: 0.5rem; }
+    .card-date { font-family: var(--mono); font-size: 0.67rem; color: var(--ink-muted); letter-spacing: 0.06em; display: block; margin-bottom: 0.7rem; }
+    .card-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .tag { font-family: var(--mono); font-size: 0.6rem; padding: 0.2rem 0.6rem; background: var(--surface); color: var(--ink-muted); letter-spacing: 0.06em; border: 1px solid var(--line); }
+    .card-toggle { font-size: 1.4rem; color: var(--ink-muted); flex-shrink: 0; transition: transform 0.3s, color 0.3s; margin-top: 0.2rem; user-select: none; line-height: 1; }
+    .timeline-item.open .card-toggle { transform: rotate(45deg); color: var(--accent); }
+    .card-body { max-height: 0; overflow: hidden; transition: max-height 0.6s cubic-bezier(0.4,0,0.2,1); }
+    .timeline-item.open .card-body { max-height: 4000px; }
+    .card-body-inner { padding: 2rem 2.2rem 2.5rem; border-top: 1px solid var(--line); }
+    .journal-section { margin-bottom: 2rem; }
+    .journal-label { font-family: var(--mono); font-size: 0.67rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.8rem; }
+    .journal-text { font-size: 0.94rem; color: var(--ink-soft); line-height: 1.88; }
+    .journal-text p + p { margin-top: 0.9rem; }
+    .journal-findings { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+    .finding-box { padding: 1.2rem; border: 1px solid var(--line); background: var(--surface); }
+    .finding-box h5 { font-family: var(--mono); font-size: 0.63rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 0.6rem; }
+    .finding-box p { font-size: 0.87rem; color: var(--ink-soft); line-height: 1.65; }
+
+    /* ATTENTION VIZ */
+    .attn-viz-container {
+      margin-top: 2rem;
+      border: 1px solid var(--line);
+      background: #0f1117;
+      padding: 1.5rem;
+      position: relative;
+    }
+    .attn-viz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .attn-viz-title {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #6b7280;
+    }
+    .attn-viz-legend {
+      display: flex;
+      gap: 1.2rem;
+      align-items: center;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      color: #6b7280;
+    }
+    .legend-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+    .legend-dot.bid { background: #34d399; }
+    .legend-dot.ask { background: #f87171; }
+    #attn-canvas {
+      width: 100%;
+      display: block;
+      cursor: crosshair;
+    }
+    .attn-info-bar {
+      margin-top: 0.8rem;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      color: #6b7280;
+      min-height: 1.2em;
+    }
+    .attn-controls {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.8rem;
+    }
+    .attn-btn {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.35rem 0.9rem;
+      border: 1px solid #374151;
+      background: transparent;
+      color: #9ca3af;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .attn-btn:hover, .attn-btn.active { border-color: var(--accent); color: var(--accent); }
+
+    /* ABOUT */
+    #about { background: var(--surface); border-top: 1px solid var(--line); }
+    .about-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 5rem; align-items: start; }
+    .about-text p { font-size: 1rem; color: var(--ink-soft); line-height: 1.9; margin-bottom: 1.4rem; }
+    .about-text p:last-child { margin-bottom: 0; }
+    .sidebar-block { border: 1px solid var(--line); background: var(--bg); padding: 1.8rem; margin-bottom: 1.5rem; }
+    .sidebar-block h4 { font-family: var(--mono); font-size: 0.67rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 1.2rem; }
+    .sidebar-block ul { list-style: none; display: flex; flex-direction: column; gap: 0.7rem; }
+    .sidebar-block ul li { font-size: 0.9rem; color: var(--ink-soft); display: flex; align-items: center; gap: 0.8rem; }
+    .sidebar-block ul li::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+    footer { padding: 3rem 5rem; border-top: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+    footer p { font-family: var(--mono); font-size: 0.68rem; color: var(--ink-muted); letter-spacing: 0.06em; }
+
+    .fade-up { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .fade-up.visible { opacity: 1; transform: none; }
+
+    @media (max-width: 900px) {
+      nav { padding: 1rem 1.5rem; }
+      .hero { grid-template-columns: 1fr; }
+      .hero-left { padding: 5rem 2rem 3rem; border-right: none; border-bottom: 1px solid var(--line); }
+      .hero-right { padding: 3rem 2rem; }
+      section { padding: 5rem 2rem; }
+      .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+      .journal-findings { grid-template-columns: 1fr; }
+      footer { flex-direction: column; gap: 1rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="nav-name">Patrick Yang</a>
+  <ul class="nav-links">
+    <li><a href="#research">Research</a></li>
+    <li><a href="#about">About</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <div class="hero-left">
+    <p class="hero-tag">Independent Researcher · Melbourne</p>
+    <h1 class="hero-name">Patrick<br>Yang<br><em>Researcher</em></h1>
+    <p class="hero-bio">I build machine learning systems that read the structure of financial markets — specifically the limit order book. Independent, self-directed, and deeply committed to understanding what the data is actually saying.</p>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-num">3</span>
+        <span class="stat-label">Research versions</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">17+</span>
+        <span class="stat-label">Months active</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">LOB</span>
+        <span class="stat-label">Domain focus</span>
+      </div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <h3>Research Interests</h3>
+    <ul class="interest-list">
+      <li>Limit order book dynamics and market microstructure modelling</li>
+      <li>Graph attention networks applied to financial time series</li>
+      <li>Long-memory processes and Hurst exponent analysis in tick data</li>
+      <li>ML-based prediction of full order book shape across price levels</li>
+      <li>Hierarchical temporal architectures for high-frequency data</li>
+    </ul>
+    <div class="hero-quote">
+      <p>"The market is not a number. It is a structure. And structures can be learned."</p>
+      <cite>— Personal research log, 2025</cite>
+    </div>
+  </div>
+</div>
+
+<section id="research">
+  <div class="section-header fade-up">
+    <span class="section-tag">Research Log</span>
+    <h2 class="section-title">LOB-GATv2: An Evolution</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="timeline">
+
+    <!-- V1 -->
+    <div class="timeline-item" id="item-1">
+      <div class="timeline-dot" onclick="toggleItem('item-1')"></div>
+      <div class="timeline-card" onclick="toggleItem('item-1')">
+        <div class="card-header">
+          <div>
+            <span class="card-version">LOB-GATv2 · Version 1</span>
+            <h3 class="card-title">Can the Order Book Be Learned?<br>A First Proof of Structure</h3>
+            <span class="card-date">Oct 2025 — Dec 2025</span>
+            <div class="card-tags">
+              <span class="tag">AAPL</span><span class="tag">LOBSTER</span><span class="tag">GATv2</span>
+              <span class="tag">Hurst Exponent</span><span class="tag">Proof of Concept</span>
+            </div>
+          </div>
+          <span class="card-toggle">+</span>
+        </div>
+        <div class="card-body">
+          <div class="card-body-inner">
+            <div class="journal-section">
+              <div class="journal-label">The Question</div>
+              <div class="journal-text">
+                <p>Before writing a single line of model code, I needed to answer a prior question: is there learnable structure in limit order book data at all? A model trained on noise is worse than no model — it gives false confidence. So the first version of this project was less about architecture and more about justification.</p>
+                <p>I started with a Hurst exponent analysis on AAPL tick data in LOBSTER format. The result — H ≈ 0.76 — indicated strong long-memory persistence. This is not random walk territory. The order book has memory, and that memory is statistically detectable. That single number gave me the licence to proceed.</p>
+              </div>
+            </div>
+            <div class="journal-section">
+              <div class="journal-label">The Core Idea</div>
+              <div class="journal-text">
+                <p>The representational insight of V1: an order book at any tick is not a flat vector — it is a relational structure. Bid and ask sides mirror each other. Price levels are ordered. The spread between them carries information. So rather than feeding raw LOB data into a sequential model, I asked: what if we treat the 20 price-volume points as nodes in a graph, connected by their structural relationships?</p>
+                <p>I built a GATv2-based graph attention network. GATv2 (Brody et al., ICLR 2022) makes attention truly dynamic — the score between two nodes depends on both their features jointly, not independently. For order book data, where the relationship between a bid and an ask level is fundamentally pairwise, this distinction matters. V1 used both within-tick spatial edges and cross-tick temporal edges, with log-difference input features for stationarity.</p>
+              </div>
+            </div>
+
+            <!-- REAL ATTENTION VISUALISATION -->
+            <div class="journal-section" onclick="event.stopPropagation()">
+              <div class="journal-label">What The Model Actually Learned — Real Attention Weights</div>
+              <div class="journal-text">
+                <p>The graph below shows the actual learned attention pattern extracted from <code style="font-family:var(--mono);font-size:0.85em;background:#f2ede6;padding:0.1em 0.3em;">best_model.pt</code>. Each node is a price level — 10 bid (green) and 10 ask (red). Edge thickness and opacity encode real GATv2 attention weights computed from the trained W_l, W_r projection matrices and attention vector. Hover over any node to see where it concentrates its attention.</p>
+              </div>
+              <div class="attn-viz-container">
+                <div class="attn-viz-header">
+                  <span class="attn-viz-title">GATv2 Attention Graph — LOB-GATv2 v1 · best_model.pt</span>
+                  <div class="attn-viz-legend">
+                    <div class="legend-item"><div class="legend-dot bid"></div>Bid levels (0–9)</div>
+                    <div class="legend-item"><div class="legend-dot ask"></div>Ask levels (0–9)</div>
+                  </div>
+                </div>
+                <canvas id="attn-canvas" height="380"></canvas>
+                <div class="attn-info-bar" id="attn-info">Hover a node to inspect its attention pattern · <span style="color:#f59e0b">BID[3] and ASK[9] are the dominant attention sinks</span></div>
+                <div class="attn-controls">
+                  <button class="attn-btn active" id="btn-top" onclick="setMode('top')">Top edges</button>
+                  <button class="attn-btn" id="btn-all" onclick="setMode('all')">All edges</button>
+                  <button class="attn-btn" id="btn-animate" onclick="toggleAnim()">Pause</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="journal-section">
+              <div class="journal-label">What Worked · What Failed</div>
+              <div class="journal-findings">
+                <div class="finding-box">
+                  <h5>✓ Worked</h5>
+                  <p>The model learned. Validation MSE came in well below the naive baseline — confirming that graph-structured representations of the LOB carry real predictive signal. The model concentrated attention on BID level 3, suggesting mid-book liquidity is structurally significant.</p>
+                </div>
+                <div class="finding-box">
+                  <h5>✗ Failed / Learned</h5>
+                  <p>Train/validation leakage from overlapping sequence windows near the chronological split inflated early results. Fixed with a gap buffer. Embeddings initially appeared frozen — confirmed correct as registered buffers, not trainable parameters.</p>
+                </div>
+              </div>
+            </div>
+            <div class="journal-section">
+              <div class="journal-label">Honest Reflection</div>
+              <div class="journal-text">
+                <p>V1 was a proof, not a product. Its sole purpose was to establish that the question was worth asking. It did that. The architecture was deliberately simple — one asset, one data source, one goal: does the signal exist? The answer was yes. That was enough to move forward.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- V2 -->
+    <div class="timeline-item" id="item-2">
+      <div class="timeline-dot" onclick="toggleItem('item-2')"></div>
+      <div class="timeline-card" onclick="toggleItem('item-2')">
+        <div class="card-header">
+          <div>
+            <span class="card-version">LOB-GATv2 · Version 2</span>
+            <h3 class="card-title">Broader Horizons.<br>Testing Generalisability on QQQ</h3>
+            <span class="card-date">Dec 2025 — Feb 2026</span>
+            <div class="card-tags">
+              <span class="tag">QQQ</span><span class="tag">Cross-Asset</span><span class="tag">Full LOB Shape</span>
+              <span class="tag">MSE Loss</span><span class="tag">AWS EC2</span>
+            </div>
+          </div>
+          <span class="card-toggle">+</span>
+        </div>
+        <div class="card-body">
+          <div class="card-body-inner">
+            <div class="journal-section">
+              <div class="journal-label">The Question</div>
+              <div class="journal-text">
+                <p>V1 proved structure existed in AAPL. But a model that only works on one ticker is not a model — it is memorisation. V2 was about breadth: does the same architecture generalise? Can the same representational choices extract signal from a different instrument with different liquidity dynamics?</p>
+                <p>I moved to QQQ — an ETF with its own order book characteristics, distinct from a single-name equity. The expanded dataset also meant more serious infrastructure. I migrated training to AWS EC2 (Tesla T4, ap-southeast-2), which introduced its own operational challenges.</p>
+              </div>
+            </div>
+            <div class="journal-section">
+              <div class="journal-label">The Architecture Shift</div>
+              <div class="journal-text">
+                <p>V1 predicted a directional signal. V2 shifted to predicting the full next-tick order book shape: all 20 price-volume points across both sides. This is a harder task, but a more honest one. Directional prediction collapses a rich structure into a single bit. Full shape prediction forces the model to genuinely understand the book.</p>
+                <p>MSE over all 40 output values became the loss function. Side embeddings and level embeddings were added to give each node a structural identity — so the model knows not just what a node's value is, but where it sits in the book's hierarchy. A cosine annealing learning rate schedule was introduced for training stability.</p>
+              </div>
+            </div>
+            <div class="journal-section">
+              <div class="journal-label">What Worked · What Failed</div>
+              <div class="journal-findings">
+                <div class="finding-box">
+                  <h5>✓ Worked</h5>
+                  <p>Generalisation held. The model found signal in QQQ with the same core architecture. Side and level embeddings meaningfully improved attention quality by giving each node structural identity beyond its raw feature values.</p>
+                </div>
+                <div class="finding-box">
+                  <h5>✗ Failed / Learned</h5>
+                  <p>Weight update deceleration was misread as a data insufficiency problem. It was the cosine annealing schedule doing its job. Lesson: understand your training dynamics before diagnosing your data.</p>
+                </div>
+              </div>
+            </div>
+            <div class="journal-section">
+              <div class="journal-label">Honest Reflection</div>
+              <div class="journal-text">
+                <p>V2 was where I started taking infrastructure seriously. Running overnight training on EC2, managing screen sessions, debugging SCP transfers — these are not glamorous problems, but they are real ones. Independent research means no DevOps team. V2 taught me to be my own.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- V3 NEMESIS -->
+    <div class="timeline-item" id="item-3">
+      <div class="timeline-dot" onclick="toggleItem('item-3')"></div>
+      <div class="timeline-card" onclick="toggleItem('item-3')">
+        <div class="card-header">
+          <div>
+            <span class="card-version">LOB-GATv2 · Version 3 — Nemesis</span>
+            <h3 class="card-title">Spatial Meets Temporal.<br>A Hierarchical Dual-Graph Architecture</h3>
+            <span class="card-date">Feb 2026 — Present</span>
+            <div class="card-tags">
+              <span class="tag">Hierarchical GNN</span><span class="tag">Within-Tick Spatial</span>
+              <span class="tag">Cross-Tick Temporal</span><span class="tag">Dual Graph</span><span class="tag">Active Research</span>
+            </div>
+          </div>
+          <span class="card-toggle">+</span>
+        </div>
+        <div class="card-body">
+          <div class="card-body-inner">
+            <div class="journal-section">
+              <div class="journal-label">The Question</div>
+              <div class="journal-text">
+                <p>V1 and V2 used cross-tick temporal edges as the primary graph signal. But at any single tick, the order book is also a spatial structure — bid levels relate to each other, ask levels relate to each other, and both sides interact across the spread. What happens if we model both simultaneously, in a hierarchical two-stage architecture?</p>
+                <p>I called this version Nemesis — not as a statement of confidence, but as a reminder that complexity has costs. Every new component is a new place for things to go wrong.</p>
+              </div>
+            </div>
+            <div class="journal-section">
+              <div class="journal-label">The Architecture</div>
+              <div class="journal-text">
+                <p>Nemesis is a hierarchical dual-graph system. Stage one applies GATv2 attention within each tick — treating the 20 LOB nodes as a spatial graph where edges encode structural relationships between price levels and across the bid-ask spread. This produces a tick-level embedding that captures the snapshot structure of the book at that moment.</p>
+                <p>Stage two applies GATv2 attention across ticks — where the long-memory signal from the Hurst analysis is most directly exploited. The two-stage design means the model first learns what the book looks like at a point in time, then learns how those snapshots evolve.</p>
+              </div>
+            </div>
+            <div class="journal-section">
+              <div class="journal-label">What Is Working · What Remains Open</div>
+              <div class="journal-findings">
+                <div class="finding-box">
+                  <h5>✓ Progress</h5>
+                  <p>The hierarchical separation of spatial and temporal processing is architecturally clean. Early results suggest the within-tick stage improves the quality of representations fed into the temporal stage.</p>
+                </div>
+                <div class="finding-box">
+                  <h5>○ Open Questions</h5>
+                  <p>Does the spatial graph add genuine signal over pure temporal modelling, or noise? The ablation is in progress. Computational cost of dual-graph attention at scale is a real constraint.</p>
+                </div>
+              </div>
+            </div>
+            <div class="journal-section">
+              <div class="journal-label">On The Horizon</div>
+              <div class="journal-text">
+                <p>I am exploring an extension: using attention mechanisms to dynamically parameterise Kalman filter matrices (Q, R, F) conditioned on LOB sequence context — bridging differentiable state-space models with graph attention. This connects to the DKFAN literature and, to my knowledge, has not been applied to limit order book modelling.</p>
+              </div>
+            </div>
+            <div class="journal-section">
+              <div class="journal-label">Honest Reflection</div>
+              <div class="journal-text">
+                <p>Nemesis is ongoing. I am writing this mid-experiment, which feels appropriate — research is not a series of finished results. It is a series of live questions. The most important thing V3 has taught me so far: architectural complexity must be earned through ablation, not assumed through intuition.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section id="about">
+  <div class="section-header fade-up">
+    <span class="section-tag">About</span>
+    <h2 class="section-title">The Researcher</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="about-grid">
+    <div class="about-text fade-up">
+      <p>I am an independent quantitative researcher based in Melbourne, working at the intersection of machine learning and market microstructure. Since October 2025, I have dedicated myself to understanding how graph attention networks can extract predictive structure from limit order book data.</p>
+      <p>I have no lab, no supervisor, and no team. What I have is a research question I cannot stop thinking about, a growing body of empirical work, and a habit of reaching out to academics who consistently mistake me for a first-year PhD student. I take that as a sign I am asking the right questions.</p>
+      <p>My academic background includes coursework at the University of Melbourne, and I have engaged with researchers across market microstructure and neuroeconomics. My practical background is as a self-taught builder — comfortable across the full stack from data pipeline to model training to cloud infrastructure.</p>
+      <p>I am drawn to work where rigour and curiosity are not in tension. Where you are expected to understand why the model behaves the way it does — not just whether the output looks acceptable.</p>
+    </div>
+    <div class="about-sidebar fade-up">
+      <div class="sidebar-block">
+        <h4>Technical Stack</h4>
+        <ul>
+          <li>Python · PyTorch · PyTorch Geometric</li>
+          <li>AWS EC2 · Ubuntu · CUDA / Tesla T4</li>
+          <li>LOBSTER tick data format</li>
+          <li>Graph neural networks (GATv2)</li>
+          <li>Time series analysis · Hurst exponent</li>
+          <li>López de Prado methodology</li>
+        </ul>
+      </div>
+      <div class="sidebar-block">
+        <h4>Academic Contacts</h4>
+        <ul>
+          <li>Prof. Carsten Murawski — UniMelb</li>
+          <li>Prof. Carole Comerton-Forde — UniMelb</li>
+        </ul>
+      </div>
+      <div class="sidebar-block">
+        <h4>Key References</h4>
+        <ul>
+          <li>Brody et al. — GATv2 (ICLR 2022)</li>
+          <li>López de Prado — Advances in Financial ML</li>
+          <li>DKFAN — differentiable Kalman attention</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Patrick Yang · Independent Quantitative Research · Melbourne, AU</p>
+  <p>© 2026</p>
+</footer>
+
+<script>
+// ── Real attention data from best_model.pt ──────────────────────────────────
+const MODEL_DATA = {
+  attn: [[0.04712,0.04797,0.04895,0.05249,0.04845,0.04983,0.05008,0.04979,0.05094,0.04805,0.05175,0.05097,0.05058,0.05182,0.05136,0.04832,0.05035,0.05207,0.04884,0.05027],[0.05077,0.04867,0.05036,0.05231,0.05004,0.05002,0.04930,0.05137,0.05024,0.04973,0.05071,0.05053,0.04922,0.05024,0.04954,0.04791,0.04872,0.04993,0.04953,0.05088],[0.04936,0.04862,0.04796,0.05043,0.04966,0.04951,0.05086,0.05066,0.04961,0.05025,0.05007,0.04882,0.04986,0.05090,0.05127,0.04980,0.04976,0.05189,0.04866,0.05205],[0.05040,0.04982,0.04980,0.05210,0.05023,0.04983,0.04991,0.05086,0.04946,0.05031,0.05006,0.04958,0.04884,0.04977,0.04939,0.04899,0.04930,0.05022,0.04978,0.05134],[0.04927,0.04815,0.04907,0.05219,0.04911,0.05026,0.05037,0.05112,0.05016,0.04936,0.05098,0.04993,0.04967,0.05105,0.05006,0.04793,0.04945,0.05139,0.04926,0.05123],[0.04957,0.04913,0.04906,0.05221,0.04865,0.04963,0.04955,0.05087,0.05028,0.04913,0.05028,0.04909,0.05023,0.05034,0.05060,0.04921,0.05053,0.05188,0.04991,0.04987],[0.04909,0.04702,0.04877,0.05092,0.04912,0.04947,0.05082,0.05134,0.05014,0.04982,0.05125,0.05012,0.04983,0.05165,0.05077,0.04856,0.04976,0.05134,0.04889,0.05134],[0.04995,0.04869,0.04985,0.05297,0.04952,0.04937,0.04881,0.05153,0.05094,0.04832,0.05079,0.04962,0.04925,0.05106,0.05022,0.04819,0.04928,0.05085,0.04914,0.05165],[0.04981,0.04896,0.04963,0.05234,0.04965,0.05050,0.05050,0.05144,0.05022,0.04958,0.05040,0.04936,0.04922,0.05051,0.04967,0.04866,0.04786,0.05068,0.04979,0.05124],[0.04967,0.04830,0.04924,0.05195,0.04958,0.04925,0.05005,0.05097,0.05010,0.04922,0.05086,0.04974,0.04989,0.05135,0.05010,0.04812,0.04937,0.05165,0.04873,0.05186],[0.04948,0.04837,0.04822,0.05098,0.04865,0.05099,0.05070,0.05134,0.05079,0.04957,0.05022,0.04949,0.04983,0.05079,0.05100,0.04811,0.04976,0.05151,0.04926,0.05092],[0.04955,0.04767,0.04919,0.05219,0.04941,0.04880,0.04924,0.05059,0.05088,0.04866,0.05125,0.05087,0.05058,0.05106,0.05052,0.04775,0.04999,0.05201,0.04854,0.05124],[0.05021,0.04831,0.04955,0.05127,0.05038,0.04844,0.04981,0.05047,0.04922,0.04967,0.05072,0.05027,0.05053,0.05095,0.04960,0.04853,0.04950,0.05191,0.04855,0.05210],[0.04970,0.04894,0.04918,0.05236,0.04914,0.04960,0.04992,0.05059,0.04976,0.04959,0.05071,0.04963,0.05020,0.05064,0.04998,0.04862,0.04952,0.05191,0.04937,0.05065],[0.05015,0.04850,0.04966,0.05082,0.05050,0.04869,0.05039,0.05028,0.04883,0.05063,0.05043,0.05041,0.05054,0.05064,0.04935,0.04883,0.04931,0.05153,0.04879,0.05173],[0.05008,0.04785,0.04982,0.05167,0.04978,0.04897,0.04935,0.05061,0.05045,0.04921,0.05123,0.05141,0.05072,0.05102,0.04989,0.04784,0.04883,0.05144,0.04863,0.05120],[0.05042,0.04892,0.04944,0.05171,0.04954,0.05010,0.05048,0.05110,0.04945,0.05020,0.05008,0.05020,0.05024,0.05042,0.04941,0.04800,0.04868,0.05101,0.04996,0.05065],[0.05000,0.04788,0.04941,0.05155,0.04994,0.04802,0.04990,0.05068,0.04960,0.04922,0.05106,0.05013,0.05053,0.05123,0.05021,0.04847,0.04972,0.05208,0.04823,0.05216],[0.05058,0.04900,0.05008,0.05199,0.05013,0.04905,0.04944,0.05066,0.04950,0.04981,0.05007,0.04989,0.05018,0.05020,0.04931,0.04865,0.04915,0.05138,0.04923,0.05168],[0.04926,0.04634,0.04943,0.05136,0.04967,0.04761,0.04928,0.05024,0.05044,0.04884,0.05167,0.05178,0.05128,0.05161,0.05069,0.04840,0.05055,0.05253,0.04832,0.05071]],
+  level_norms: [14.315,13.057,12.679,12.964,10.496,12.626,11.985,11.590,10.684,11.514,10.397,11.160,11.758,10.402,12.561,10.628,11.886,9.897,11.765,11.026],
+  distance_alpha: 2.768,
+  distance_beta: 0.230
+};
+
+// ── Canvas setup ─────────────────────────────────────────────────────────────
+const canvas = document.getElementById('attn-canvas');
+const ctx = canvas.getContext('2d');
+let W, H_c;
+let nodes = [];
+let hoveredNode = null;
+let animMode = 'top'; // 'top' | 'all'
+let animRunning = true;
+let animPhase = 0;
+let rafId = null;
+
+function resize() {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  W = rect.width - 48;
+  H_c = 380;
+  canvas.width = W;
+  canvas.height = H_c;
+  buildNodes();
+}
+
+function buildNodes() {
+  nodes = [];
+  const N = 10;
+  // Two columns: bid (left) and ask (right)
+  const colBid = W * 0.28;
+  const colAsk = W * 0.72;
+  const topY = 40;
+  const botY = H_c - 40;
+  const step = (botY - topY) / (N - 1);
+
+  for (let i = 0; i < N; i++) {
+    nodes.push({ id: i, x: colBid, y: topY + i * step, side: 'bid', level: i, norm: MODEL_DATA.level_norms[i] });
+  }
+  for (let i = 0; i < N; i++) {
+    nodes.push({ id: N + i, x: colAsk, y: topY + i * step, side: 'ask', level: i, norm: MODEL_DATA.level_norms[N + i] });
+  }
+}
+
+// ── Drawing ───────────────────────────────────────────────────────────────────
+function getTopEdges(k) {
+  const edges = [];
+  const A = MODEL_DATA.attn;
+  for (let i = 0; i < 20; i++) {
+    for (let j = 0; j < 20; j++) {
+      if (i !== j) edges.push([i, j, A[i][j]]);
+    }
+  }
+  edges.sort((a, b) => b[2] - a[2]);
+  return edges.slice(0, k);
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H_c);
+  animPhase += 0.018;
+
+  const A = MODEL_DATA.attn;
+  const minW = Math.min(...A.map(r => Math.min(...r)));
+  const maxW = Math.max(...A.map(r => Math.max(...r)));
+
+  // Draw edges
+  let edgesToDraw = [];
+  if (hoveredNode !== null) {
+    const row = A[hoveredNode];
+    for (let j = 0; j < 20; j++) {
+      if (j !== hoveredNode) edgesToDraw.push([hoveredNode, j, row[j]]);
+    }
+    edgesToDraw.sort((a, b) => b[2] - a[2]);
+  } else if (animMode === 'top') {
+    edgesToDraw = getTopEdges(25);
+  } else {
+    for (let i = 0; i < 20; i++)
+      for (let j = 0; j < 20; j++)
+        if (i !== j) edgesToDraw.push([i, j, A[i][j]]);
+  }
+
+  edgesToDraw.forEach(([src, tgt, w], idx) => {
+    const ns = nodes[src], nt = nodes[tgt];
+    const norm = (w - minW) / (maxW - minW);
+
+    // Animated pulse offset
+    const pulse = hoveredNode !== null ? 1 : 0.5 + 0.5 * Math.sin(animPhase - idx * 0.15);
+    const alpha = (0.08 + norm * 0.55) * pulse;
+    const lineW = 0.4 + norm * 2.8;
+
+    // Color: cross-side edges are amber, same-side are colored by side
+    let color;
+    if (ns.side !== nt.side) {
+      color = `rgba(251,191,36,${alpha})`;
+    } else if (ns.side === 'bid') {
+      color = `rgba(52,211,153,${alpha})`;
+    } else {
+      color = `rgba(248,113,113,${alpha})`;
+    }
+
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineW;
+
+    // Bezier curve for visual clarity
+    const cpX = (ns.x + nt.x) / 2 + (ns.side === nt.side ? (ns.side === 'bid' ? -60 : 60) : 0);
+    const cpY = (ns.y + nt.y) / 2;
+    ctx.moveTo(ns.x, ns.y);
+    ctx.quadraticCurveTo(cpX, cpY, nt.x, nt.y);
+    ctx.stroke();
+  });
+
+  // Draw column labels
+  ctx.font = `500 11px 'JetBrains Mono', monospace`;
+  ctx.fillStyle = 'rgba(52,211,153,0.6)';
+  ctx.textAlign = 'center';
+  ctx.fillText('BID', nodes[0].x, 18);
+  ctx.fillStyle = 'rgba(248,113,113,0.6)';
+  ctx.fillText('ASK', nodes[10].x, 18);
+
+  // Draw nodes
+  nodes.forEach(n => {
+    const isHovered = hoveredNode === n.id;
+    const r = isHovered ? 9 : 6;
+    const normSize = (n.norm - 9) / (14.5 - 9);
+
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, r + normSize * 2, 0, Math.PI * 2);
+
+    if (n.side === 'bid') {
+      ctx.fillStyle = isHovered ? '#34d399' : `rgba(52,211,153,${0.5 + normSize * 0.4})`;
+    } else {
+      ctx.fillStyle = isHovered ? '#f87171' : `rgba(248,113,113,${0.5 + normSize * 0.4})`;
+    }
+    ctx.fill();
+
+    if (isHovered) {
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    // Level label
+    ctx.font = `400 9px 'JetBrains Mono', monospace`;
+    ctx.fillStyle = 'rgba(156,163,175,0.8)';
+    ctx.textAlign = n.side === 'bid' ? 'right' : 'left';
+    const labelX = n.side === 'bid' ? n.x - (r + normSize * 2 + 4) : n.x + (r + normSize * 2 + 4);
+    ctx.fillText(`L${n.level}`, labelX, n.y + 3);
+  });
+
+  if (animRunning) rafId = requestAnimationFrame(draw);
+}
+
+// ── Hover interaction ─────────────────────────────────────────────────────────
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  let found = null;
+  nodes.forEach(n => {
+    const dx = n.x - mx, dy = n.y - my;
+    if (Math.sqrt(dx*dx + dy*dy) < 14) found = n.id;
+  });
+  if (found !== hoveredNode) {
+    hoveredNode = found;
+    if (found !== null) {
+      const n = nodes[found];
+      const row = MODEL_DATA.attn[found];
+      const topTarget = row.map((w,j) => [j,w]).filter(([j])=>j!==found).sort((a,b)=>b[1]-a[1])[0];
+      const topNode = nodes[topTarget[0]];
+      document.getElementById('attn-info').innerHTML =
+        `<span style="color:${n.side==='bid'?'#34d399':'#f87171'}">${n.side.toUpperCase()}[${n.level}]</span> ` +
+        `attends most to <span style="color:${topNode.side==='bid'?'#34d399':'#f87171'}">${topNode.side.toUpperCase()}[${topNode.level}]</span> ` +
+        `(weight: ${topTarget[1].toFixed(4)}) · embedding norm: ${n.norm.toFixed(2)}`;
+    } else {
+      document.getElementById('attn-info').innerHTML = 'Hover a node to inspect its attention pattern · <span style="color:#f59e0b">BID[3] and ASK[9] are the dominant attention sinks</span>';
+    }
+    if (!animRunning) { animRunning = true; draw(); animRunning = false; ctx.clearRect(0,0,W,H_c); draw(); }
+  }
+});
+
+canvas.addEventListener('mouseleave', () => { hoveredNode = null; });
+
+function setMode(m) {
+  animMode = m;
+  document.getElementById('btn-top').classList.toggle('active', m === 'top');
+  document.getElementById('btn-all').classList.toggle('active', m === 'all');
+}
+
+function toggleAnim() {
+  animRunning = !animRunning;
+  document.getElementById('btn-animate').textContent = animRunning ? 'Pause' : 'Play';
+  if (animRunning) draw();
+}
+
+// ── Timeline logic ────────────────────────────────────────────────────────────
+function toggleItem(id) {
+  const item = document.getElementById(id);
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.timeline-item').forEach(i => i.classList.remove('open'));
+  if (!isOpen) {
+    item.classList.add('open');
+    if (id === 'item-1') setTimeout(() => { resize(); if (!rafId) draw(); }, 650);
+  }
+}
+
+// ── Fade observer ─────────────────────────────────────────────────────────────
+const observer = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => { if (e.isIntersecting) setTimeout(() => e.target.classList.add('visible'), i * 120); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+window.addEventListener('resize', () => { resize(); });
+setTimeout(() => { toggleItem('item-1'); }, 500);
+</script>
+
+</body>
+</html>
