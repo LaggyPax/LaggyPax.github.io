@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -200,6 +201,7 @@
   <a href="#" class="nav-name">Patrick Yang</a>
   <ul class="nav-links">
     <li><a href="#research">Research</a></li>
+    <li><a href="#future">Future Directions</a></li>
     <li><a href="#about">About</a></li>
   </ul>
 </nav>
@@ -232,7 +234,7 @@
       <li>Market microstructure: studying informed and uninformed trader behaviour with machine learning</li>
     </ul>
     <div class="hero-quote">
-      <p>I think transformer is a high dimensional, multiple linear regression with extra steps, and Financial ML is a new approach to explain Kyle's informed trader model.</p>
+      <p>I think transformer is a high dimensional, multiple linear regression with extra steps, and Financial ML is a new approach to explain Kyle's model.</p>
     </div>
   </div>
 </div>
@@ -427,6 +429,43 @@
       </div>
     </div>
 
+  </div>
+</section>
+
+<section id="future" style="border-top: 1px solid var(--line);">
+  <div class="section-header fade-up">
+    <span class="section-tag">Future Directions</span>
+    <h2 class="section-title">Open Questions</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="timeline">
+    <div class="timeline-item" id="item-future-1">
+      <div class="timeline-dot" onclick="toggleItem('item-future-1')"></div>
+      <div class="timeline-card" onclick="toggleItem('item-future-1')">
+        <div class="card-header">
+          <div>
+            <span class="card-version">Direction 01</span>
+            <h3 class="card-title">The Tick Causality Problem<br>& Meta-Labelling</h3>
+            <div class="card-tags">
+              <span class="tag">Meta-Labelling</span><span class="tag">Bar Construction</span><span class="tag">Causal Structure</span>
+            </div>
+          </div>
+          <span class="card-toggle">+</span>
+        </div>
+        <div class="card-body">
+          <div class="card-body-inner">
+            <div class="journal-section">
+              <div class="journal-text">
+                <p>Ticks are not evenly spaced in logic — they are evenly spaced in delay. For three consecutive ticks A, B, and C, there is no reason to assume C was caused by B. The trader who generated C may have been reacting to A, just as the trader who generated B was. They were both staring at the same snapshot of the world, and they both pulled the trigger — just at slightly different moments.</p>
+                <p>This means that in a sequence of 100 ticks, tick 50 may have been set in motion by tick 1, while tick 49 — its immediate neighbour — is causally unrelated. The sequence looks continuous. The causality is not. Standard sequential models assume adjacency implies causality. That assumption quietly breaks everything downstream.</p>
+                <p>Meta-labelling is my attempt to take this seriously. Before any model sees the data, we need to ask: which ticks actually belong together? The simplest version is bar construction — summing or averaging over a fixed window. But the more interesting question is whether we can identify subticks: clusters of ticks that share a single originating cause, grouped not by time but by logic.</p>
+                <p>I think this step is as important as the choice of loss function — maybe more so. A loss function determines how a model digs: how fast, how precisely, how carefully. Meta-labelling determines what it is digging for, and how deep that thing is buried. You can have a perfect optimiser and still learn nothing if the labels don't reflect the true structure of causality in the market.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
