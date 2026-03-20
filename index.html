@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -460,6 +461,57 @@
                 <p>This means that in a sequence of 100 ticks, tick 50 may have been set in motion by tick 1, while tick 49 — its immediate neighbour — is causally unrelated. The sequence looks continuous. The causality is not. Standard sequential models assume adjacency implies causality. That assumption quietly breaks everything downstream.</p>
                 <p>Meta-labelling is my attempt to take this seriously. Before any model sees the data, we need to ask: which ticks actually belong together? The simplest version is bar construction — summing or averaging over a fixed window. But the more interesting question is whether we can identify subticks: clusters of ticks that share a single originating cause, grouped not by time but by logic.</p>
                 <p>I think this step is as important as the choice of loss function — maybe more so. A loss function determines how a model digs: how fast, how precisely, how carefully. Meta-labelling determines what it is digging for, and how deep that thing is buried. You can have a perfect optimiser and still learn nothing if the labels don't reflect the true structure of causality in the market.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="timeline-item" id="item-future-2">
+      <div class="timeline-dot" onclick="toggleItem('item-future-2')"></div>
+      <div class="timeline-card" onclick="toggleItem('item-future-2')">
+        <div class="card-header">
+          <div>
+            <span class="card-version">Direction 02</span>
+            <h3 class="card-title">Causally Regularised Attention<br>& The Attention–Causation Gap</h3>
+            <div class="card-tags">
+              <span class="tag">Causal Discovery</span><span class="tag">ANM</span><span class="tag">Attention Gating</span>
+              <span class="tag">RESIT</span><span class="tag">Graph Structure</span>
+            </div>
+          </div>
+          <span class="card-toggle">+</span>
+        </div>
+        <div class="card-body">
+          <div class="card-body-inner">
+            <div class="journal-section">
+              <div class="journal-label">The Problem</div>
+              <div class="journal-text">
+                <p>Attention and causation are answering different questions. Attention asks: which inputs are most useful for prediction? Causation asks: which inputs physically generate this output? In a limit order book, these can diverge badly. A large institutional trader may place a visible order at level 5 bid moments before moving the mid-price via a level 1 market order. Attention learns to watch level 5 — it is a perfect predictor. But level 5 causes nothing. It is a shadow, not a lever.</p>
+                <p>This is not a failure of the model — it is a fundamental property of Rung 1 statistical tools. Attention lives at the level of association: P(Y | X). Causation lives one rung higher, at the level of intervention: P(Y | do(X)). No amount of data or model capacity closes that gap without additional structural assumptions. The question is whether those assumptions can be encoded directly into the attention mechanism itself.</p>
+              </div>
+            </div>
+            <div class="journal-section">
+              <div class="journal-label">The Proposal</div>
+              <div class="journal-text">
+                <p>The core idea is to use causal discovery as a regulariser on attention — a learned gate that allows only causally justified edges to carry full weight. Before each attention layer propagates, an Additive Noise Model test is applied to each candidate edge: regress X<sub>j</sub> on X<sub>i</sub>, compute residuals, test whether residuals are independent of X<sub>i</sub>. Independent residuals support the causal direction i → j. Dependent residuals suggest the direction is wrong, or the relationship is spurious.</p>
+                <p>Each edge receives a causal confidence score c<sub>ij</sub> ∈ [0, 1] derived from the p-value of this independence test. The attention weight is then gated: α̃<sub>ij</sub> = α<sub>ij</sub> · σ(λ · c<sub>ij</sub>), where λ controls the hardness of the causal constraint. The training objective combines the standard prediction loss with a causal regularisation term that penalises attention weight on edges that fail the ANM test.</p>
+              </div>
+            </div>
+            <div class="journal-findings" style="margin-top: 0;">
+              <div class="finding-box">
+                <h5>Why This Matters</h5>
+                <p>A model with causally regularised attention has a principled answer to the robustness question: these edges passed additive noise model tests — they represent stable causal mechanisms, not spurious correlations that may not persist out-of-sample. That is a stronger claim than validation loss alone.</p>
+              </div>
+              <div class="finding-box">
+                <h5>Open Challenges</h5>
+                <p>ANM testing over hundreds of LOB edges per training step is computationally expensive. The framework assumes i.i.d. data, while LOB data has long memory (H ≈ 0.76). Market causal structure is likely non-stationary across regimes. Each of these is a tractable research problem.</p>
+              </div>
+            </div>
+            <div class="journal-section" style="margin-top: 2rem;">
+              <div class="journal-label">Theoretical Grounding</div>
+              <div class="journal-text">
+                <p>The framework draws on Peters et al. (2014) — <em>Causal Discovery with Continuous Additive Noise Models</em> — which proves that under additive noise structure, the true causal DAG is identifiable from the joint distribution alone, without interventional experiments. The RESIT algorithm (Regression with Subsequent Independence Test) provides the practical machinery: for each node, regress on candidate parents and test residual independence. A node whose residuals are independent of all non-descendants is a valid sink in the causal order.</p>
+                <p>Applied to the LOB, this means asking: for each price level X<sub>j</sub>, which other levels are genuine direct causes of X<sub>j</sub>'s next-tick value, versus which are merely correlated? The answer to that question, encoded as a dynamic mask on the attention matrix, is what this direction is ultimately building toward.</p>
               </div>
             </div>
           </div>
