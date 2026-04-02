@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Patrick Yang — Quantitative Research</title>
   <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
   <style>
     :root {
       --bg: #faf8f5;
@@ -203,6 +205,7 @@
   <ul class="nav-links">
     <li><a href="#research">Research</a></li>
     <li><a href="#future">Future Directions</a></li>
+    <li><a href="#markets">Markets</a></li>
     <li><a href="#about">About</a></li>
   </ul>
 </nav>
@@ -520,6 +523,237 @@
     </div>
   </div>
 </section>
+
+<section id="markets" style="border-top: 1px solid var(--line);">
+  <div class="section-header fade-up">
+    <span class="section-tag">Markets</span>
+    <h2 class="section-title">ETF Monitor</h2>
+    <div class="section-line"></div>
+  </div>
+  <p class="fade-up" style="font-size:0.93rem;color:var(--ink-muted);margin-bottom:2.5rem;font-family:var(--mono);letter-spacing:0.04em;">Live quotes via Yahoo Finance · Click any ticker to expand the chart</p>
+
+  <div id="etf-update-row" class="fade-up" style="font-family:var(--mono);font-size:0.65rem;color:var(--ink-muted);letter-spacing:0.06em;margin-bottom:2rem;">Loading…</div>
+
+  <!-- USA -->
+  <div style="margin-bottom:2.5rem;">
+    <div style="font-family:var(--mono);font-size:0.67rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:1rem;">United States</div>
+    <div id="etf-usa-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;"></div>
+  </div>
+
+  <!-- APAC -->
+  <div style="margin-bottom:2.5rem;">
+    <div style="font-family:var(--mono);font-size:0.67rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:1rem;">Asia Pacific</div>
+    <div id="etf-apac-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;"></div>
+  </div>
+
+  <!-- Chart panel -->
+  <div id="etf-chart-panel" style="display:none;border:1px solid var(--line);background:var(--bg);padding:2rem 2.2rem;margin-top:1rem;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.2rem;">
+      <div>
+        <div id="etf-chart-title" style="font-family:var(--serif);font-size:1.2rem;font-weight:500;color:var(--ink);"></div>
+        <div id="etf-chart-sub" style="font-family:var(--mono);font-size:0.65rem;color:var(--ink-muted);margin-top:4px;letter-spacing:0.04em;"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.8rem;">
+        <div id="etf-range-btns" style="display:flex;gap:4px;">
+          <button class="etf-range-btn etf-range-active" data-range="5d">5D</button>
+          <button class="etf-range-btn" data-range="1mo">1M</button>
+          <button class="etf-range-btn" data-range="3mo">3M</button>
+          <button class="etf-range-btn" data-range="1y">1Y</button>
+          <button class="etf-range-btn" data-range="5y">5Y</button>
+        </div>
+        <span id="etf-chart-close" style="font-size:1.2rem;color:var(--ink-muted);cursor:pointer;line-height:1;padding:0 4px;" onclick="closeEtfChart()">✕</span>
+      </div>
+    </div>
+    <div style="position:relative;width:100%;height:280px;">
+      <div id="etf-chart-loading" style="display:flex;align-items:center;justify-content:center;height:280px;font-family:var(--mono);font-size:0.7rem;color:var(--ink-muted);">Loading chart data…</div>
+      <canvas id="etf-price-chart" style="display:none;"></canvas>
+    </div>
+  </div>
+</section>
+
+<style>
+  .etf-card {
+    border: 1px solid var(--line);
+    background: var(--bg);
+    padding: 1.1rem 1.3rem;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .etf-card:hover { border-color: var(--accent-soft); box-shadow: 0 4px 18px rgba(196,92,46,0.06); }
+  .etf-card.etf-active { border-color: var(--accent); }
+  .etf-ticker { font-family: var(--mono); font-size: 0.75rem; font-weight: 500; color: var(--ink); letter-spacing: 0.06em; }
+  .etf-name { font-family: var(--sans); font-size: 0.72rem; color: var(--ink-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .etf-price { font-family: var(--serif); font-size: 1.45rem; font-weight: 500; color: var(--ink); margin-top: 0.55rem; cursor: pointer; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+  .etf-price:hover { color: var(--accent); }
+  .etf-change { font-family: var(--mono); font-size: 0.65rem; margin-top: 3px; letter-spacing: 0.04em; }
+  .etf-pos { color: var(--bid); }
+  .etf-neg { color: var(--ask); }
+  .etf-neu { color: var(--ink-muted); }
+  .etf-range-btn {
+    font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 0.3rem 0.7rem; border: 1px solid var(--line); background: transparent;
+    color: var(--ink-muted); cursor: pointer; transition: border-color 0.2s, color 0.2s;
+  }
+  .etf-range-btn:hover, .etf-range-btn.etf-range-active { border-color: var(--accent); color: var(--accent); }
+</style>
+
+<script>
+(function() {
+  const USA_ETFS = [
+    {ticker:'SPY', name:'S&P 500'},
+    {ticker:'QQQ', name:'Nasdaq 100'},
+    {ticker:'DIA', name:'Dow Jones'},
+    {ticker:'IWM', name:'Russell 2000'},
+    {ticker:'VTI', name:'Total Market'},
+    {ticker:'GLD', name:'Gold'},
+    {ticker:'TLT', name:'20yr Treasury'},
+    {ticker:'XLE', name:'Energy'},
+    {ticker:'XLF', name:'Financials'},
+    {ticker:'XLK', name:'Technology'},
+  ];
+  const APAC_ETFS = [
+    {ticker:'EWJ',  name:'Japan (MSCI)'},
+    {ticker:'EWA',  name:'Australia (MSCI)'},
+    {ticker:'MCHI', name:'China (MSCI)'},
+    {ticker:'EWS',  name:'Singapore'},
+    {ticker:'EWY',  name:'South Korea'},
+    {ticker:'EWT',  name:'Taiwan'},
+    {ticker:'INDA', name:'India (MSCI)'},
+    {ticker:'FXI',  name:'China Large Cap'},
+    {ticker:'VPL',  name:'Pacific (ex-Japan)'},
+    {ticker:'AAXJ', name:'Asia ex-Japan'},
+  ];
+
+  const etfState = { activeTicker: null, activeRange: '5d', chart: null };
+
+  function buildEtfGrid(etfs, containerId) {
+    const grid = document.getElementById(containerId);
+    etfs.forEach(({ticker, name}) => {
+      const card = document.createElement('div');
+      card.className = 'etf-card fade-up';
+      card.id = 'etf-card-' + ticker;
+      card.innerHTML = `<div class="etf-ticker">${ticker}</div><div class="etf-name">${name}</div><div class="etf-price etf-neu" id="etf-price-${ticker}" style="font-size:1rem;font-family:var(--mono);">—</div>`;
+      card.addEventListener('click', () => openEtfChart(ticker, name));
+      grid.appendChild(card);
+    });
+  }
+
+  async function fetchEtfQuote(ticker) {
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=2d`;
+    try {
+      const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+      const d = await r.json();
+      const meta = d.chart.result[0].meta;
+      const price = meta.regularMarketPrice;
+      const prev = meta.chartPreviousClose;
+      const chg = price - prev;
+      const pct = (chg / prev) * 100;
+      return {price, chg, pct};
+    } catch { return null; }
+  }
+
+  async function loadEtfQuotes() {
+    const all = [...USA_ETFS, ...APAC_ETFS];
+    const now = new Date();
+    document.getElementById('etf-update-row').textContent = 'Updated ' + now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    await Promise.all(all.map(async ({ticker, name}) => {
+      const data = await fetchEtfQuote(ticker);
+      const el = document.getElementById('etf-price-' + ticker);
+      if (!el) return;
+      if (!data) { el.textContent = 'N/A'; return; }
+      const {price, chg, pct} = data;
+      const cls = chg > 0 ? 'etf-pos' : chg < 0 ? 'etf-neg' : 'etf-neu';
+      const sign = chg >= 0 ? '+' : '';
+      el.outerHTML = `
+        <div class="etf-price ${cls}" id="etf-price-${ticker}" onclick="event.stopPropagation();openEtfChart('${ticker}','${name}')">${price.toFixed(2)}</div>
+        <div class="etf-change ${cls}">${sign}${chg.toFixed(2)} (${sign}${pct.toFixed(2)}%)</div>
+      `;
+    }));
+  }
+
+  window.openEtfChart = async function(ticker, name) {
+    etfState.activeTicker = ticker;
+    document.querySelectorAll('.etf-card').forEach(c => c.classList.remove('etf-active'));
+    const card = document.getElementById('etf-card-' + ticker);
+    if (card) card.classList.add('etf-active');
+    document.getElementById('etf-chart-title').textContent = ticker + ' — ' + name;
+    document.getElementById('etf-chart-panel').style.display = 'block';
+    await loadEtfChartData(ticker, etfState.activeRange);
+    document.getElementById('etf-chart-panel').scrollIntoView({behavior:'smooth', block:'nearest'});
+  };
+
+  window.closeEtfChart = function() {
+    document.getElementById('etf-chart-panel').style.display = 'none';
+    document.querySelectorAll('.etf-card').forEach(c => c.classList.remove('etf-active'));
+    etfState.activeTicker = null;
+    if (etfState.chart) { etfState.chart.destroy(); etfState.chart = null; }
+  };
+
+  async function loadEtfChartData(ticker, range) {
+    document.getElementById('etf-chart-loading').style.display = 'flex';
+    document.getElementById('etf-price-chart').style.display = 'none';
+    const imap = {'5d':'15m','1mo':'1d','3mo':'1d','1y':'1wk','5y':'1mo'};
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=${imap[range]||'1d'}&range=${range}`;
+    try {
+      const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+      const d = await r.json();
+      const result = d.chart.result[0];
+      const timestamps = result.timestamp;
+      const closes = result.indicators.quote[0].close;
+      const labels = timestamps.map(t => {
+        const dt = new Date(t * 1000);
+        if (range === '5d') return dt.toLocaleDateString([],{month:'short',day:'numeric'}) + ' ' + dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+        if (range === '1mo' || range === '3mo') return dt.toLocaleDateString([],{month:'short',day:'numeric'});
+        return dt.toLocaleDateString([],{year:'numeric',month:'short'});
+      });
+      const filtered = labels.map((l,i) => ({l, v: closes[i]})).filter(x => x.v !== null);
+      const fLabels = filtered.map(x => x.l);
+      const fVals = filtered.map(x => +x.v.toFixed(2));
+      const first = fVals[0], last = fVals[fVals.length-1];
+      const isUp = last >= first;
+      const lineColor = isUp ? '#2a7f5e' : '#c45c2e';
+      const fillColor = isUp ? 'rgba(42,127,94,0.07)' : 'rgba(196,92,46,0.07)';
+      const sign = last >= first ? '+' : '';
+      const chgAbs = (last - first).toFixed(2);
+      const chgPct = (((last - first)/first)*100).toFixed(2);
+      document.getElementById('etf-chart-sub').textContent = fLabels[0] + ' → ' + fLabels[fLabels.length-1] + '   ' + sign + chgAbs + ' (' + sign + chgPct + '%)';
+      document.getElementById('etf-chart-loading').style.display = 'none';
+      const canvas = document.getElementById('etf-price-chart');
+      canvas.style.display = 'block';
+      if (etfState.chart) { etfState.chart.destroy(); etfState.chart = null; }
+      etfState.chart = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: fLabels,
+          datasets: [{data: fVals, borderColor: lineColor, borderWidth: 1.5, backgroundColor: fillColor, fill: true, pointRadius: 0, tension: 0.2}]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {legend:{display:false}, tooltip:{mode:'index',intersect:false, callbacks:{label: ctx=>' $'+ctx.parsed.y.toFixed(2)}}},
+          scales: {
+            x: {ticks:{maxTicksLimit:8, font:{size:10, family:"'JetBrains Mono', monospace"}, color:'#8a8078'}, grid:{display:false}},
+            y: {ticks:{font:{size:10, family:"'JetBrains Mono', monospace"}, color:'#8a8078', callback: v=>'$'+v.toFixed(0)}, grid:{color:'rgba(221,216,208,0.5)'}}
+          }
+        }
+      });
+    } catch(e) {
+      document.getElementById('etf-chart-loading').innerHTML = '<span style="font-family:var(--mono);font-size:0.68rem;color:var(--ink-muted);">Could not load data — Yahoo Finance may be rate-limiting. Try again shortly.</span>';
+    }
+  }
+
+  document.getElementById('etf-range-btns').addEventListener('click', e => {
+    if (!e.target.dataset.range) return;
+    document.querySelectorAll('.etf-range-btn').forEach(b => b.classList.remove('etf-range-active'));
+    e.target.classList.add('etf-range-active');
+    etfState.activeRange = e.target.dataset.range;
+    if (etfState.activeTicker) loadEtfChartData(etfState.activeTicker, etfState.activeRange);
+  });
+
+  buildEtfGrid(USA_ETFS, 'etf-usa-grid');
+  buildEtfGrid(APAC_ETFS, 'etf-apac-grid');
+  loadEtfQuotes();
+})();
+</script>
 
 <section id="about">
   <div class="section-header fade-up">
