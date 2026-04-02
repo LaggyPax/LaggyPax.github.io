@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -624,6 +623,9 @@
     {ticker:'AAXJ', name:'Asia ex-Japan'},
   ];
 
+  // ── Replace this with your Cloudflare Worker URL after deploying worker.js ──
+  const PROXY = 'https://frosty-snowflake-0a5d.0434589102ypj.workers.dev';
+
   const etfState = { activeTicker: null, activeRange: '5d', chart: null };
 
   function buildEtfGrid(etfs, containerId) {
@@ -639,9 +641,8 @@
   }
 
   async function fetchEtfQuote(ticker) {
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=2d`;
     try {
-      const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+      const r = await fetch(`${PROXY}/quote?ticker=${ticker}`);
       const d = await r.json();
       const meta = d.chart.result[0].meta;
       const price = meta.regularMarketPrice;
@@ -693,9 +694,9 @@
     document.getElementById('etf-chart-loading').style.display = 'flex';
     document.getElementById('etf-price-chart').style.display = 'none';
     const imap = {'5d':'15m','1mo':'1d','3mo':'1d','1y':'1wk','5y':'1mo'};
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=${imap[range]||'1d'}&range=${range}`;
+    const url = `${PROXY}/chart?ticker=${ticker}&range=${range}`;
     try {
-      const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+      const r = await fetch(url);
       const d = await r.json();
       const result = d.chart.result[0];
       const timestamps = result.timestamp;
