@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -539,6 +538,12 @@
     <div id="etf-usa-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;"></div>
   </div>
 
+  <!-- Commodities -->
+  <div style="margin-bottom:2.5rem;">
+    <div style="font-family:var(--mono);font-size:0.67rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:1rem;">Commodities</div>
+    <div id="etf-commodity-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;"></div>
+  </div>
+
   <!-- APAC -->
   <div style="margin-bottom:2.5rem;">
     <div style="font-family:var(--mono);font-size:0.67rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:1rem;">Asia Pacific</div>
@@ -604,7 +609,6 @@
     {ticker:'DIA', name:'Dow Jones'},
     {ticker:'IWM', name:'Russell 2000'},
     {ticker:'VTI', name:'Total Market'},
-    {ticker:'GLD', name:'Gold'},
     {ticker:'TLT', name:'20yr Treasury'},
     {ticker:'XLE', name:'Energy'},
     {ticker:'XLF', name:'Financials'},
@@ -625,6 +629,20 @@
 
   // ── Replace this with your Cloudflare Worker URL after deploying worker.js ──
   const PROXY = 'https://frosty-snowflake-0a5d.0434589102ypj.workers.dev';
+
+  const COMMODITY_ETFS = [
+    {ticker:'USO',  name:'Oil (WTI)'},
+    {ticker:'UNG',  name:'Natural Gas'},
+    {ticker:'COAL', name:'Coal'},
+    {ticker:'GLD',  name:'Gold'},
+    {ticker:'SLV',  name:'Silver'},
+    {ticker:'PPLT', name:'Platinum'},
+    {ticker:'CPER', name:'Copper'},
+    {ticker:'JJU',  name:'Aluminium'},
+    {ticker:'WEAT', name:'Wheat'},
+    {ticker:'CORN', name:'Corn'},
+    {ticker:'SOYB', name:'Soybeans'},
+  ];
 
   const etfState = { activeTicker: null, activeRange: '5d', chart: null };
 
@@ -654,7 +672,7 @@
   }
 
   async function loadEtfQuotes() {
-    const all = [...USA_ETFS, ...APAC_ETFS];
+    const all = [...USA_ETFS, ...APAC_ETFS, ...COMMODITY_ETFS];
     const now = new Date();
     document.getElementById('etf-update-row').textContent = 'Updated ' + now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
     await Promise.all(all.map(async ({ticker, name}) => {
@@ -752,6 +770,7 @@
 
   buildEtfGrid(USA_ETFS, 'etf-usa-grid');
   buildEtfGrid(APAC_ETFS, 'etf-apac-grid');
+  buildEtfGrid(COMMODITY_ETFS, 'etf-commodity-grid');
   loadEtfQuotes();
 })();
 </script>
